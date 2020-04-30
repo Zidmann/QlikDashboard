@@ -1,0 +1,65 @@
+// ----------------------------------------------------------------------------------------------------------------
+/*
+    Author      : Zidmann (emmanuel.zidel@gmail.com)
+    Script      : GenModel.qvs
+    Version     : 0.0.0
+    Description : Script to create the main model used in the different Qlik dashboards
+ */
+// ----------------------------------------------------------------------------------------------------------------
+// Including the variables and the functions available in the Qlik custom library
+$(Must_Include='..\02_Ressources\params.qvs');
+$(Must_Include='$(vQliklibPath)\core.qvs');
+
+SET vScriptName='GenModel';
+
+// ----------------------------------------------------------------------------------------------------------------
+//
+call console_info('Loading of the script $(vScriptName)');
+call console_jumpline;
+
+call console_info('Loading the data files');
+call file_table_read('$(vQvdFilePath)', 'data_tmp');
+call console_jumpline;
+
+call console_info('Adding new columns');
+data:
+LOAD rowno()                    as [_id],
+     number,
+     $(number_sign(number))     as [number_sign],
+     $(number_abs(number))      as [number_abs],
+     upper,
+     lower,
+     date,
+     $(date_year(date))         as [year],
+     $(date_month(date))        as [month],
+     $(date_day(date))          as [day],
+     $(date_yearmonth(date))    as [yearmonth],
+     $(date_yearmonthday(date)) as [yearmonthday]
+RESIDENT data_tmp
+ORDER BY date DESC
+;
+
+call table_drop('data_tmp');
+call console_delimitation;
+
+call console_info('Defining labels');
+labels:
+LOAD _id,
+     IF(year<2021,        0, 1) as [label_old],
+     IF(month<4,          0, 1) as [label_season],
+     IF(number_sign<>'-', 0, 1) as [label_strange]
+RESIDENT data
+;
+call console_delimitation;
+
+call console_info('Aggregating information about the dates');
+dataDate:
+NoConcatenate
+LOAD year, MAX(Date(date, 'DD/MM/YYYY')) as [lastDate]
+RESIDENT data
+GROUP BY year
+;
+call console_delimitation;
+
+call console_info('End of the script $(vScriptName)');
+call console_delimitation;

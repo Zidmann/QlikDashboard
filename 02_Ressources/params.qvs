@@ -1,0 +1,15 @@
+// ----------------------------------------------------------------------------------------------------------------
+/*
+    Author      : Zidmann (emmanuel.zidel@gmail.com)
+    Script      : params.qvs
+    Version     : 0.0.0
+    Description : Definition of all the variables in particularly the paths
+ */
+// ----------------------------------------------------------------------------------------------------------------
+
+SET vRessourcesPath='..\02_Ressources';
+LET vQliklibPath='$(vRessourcesPath)\qliklib';
+LET vInputFilePath='$(vRessourcesPath)\data\data.csv';
+
+SET vQvdPath='..\04_QVD';
+LET vQvdFilePath='$(vQvdPath)\data.qvd';
