@@ -2,7 +2,7 @@
 /*
     Author      : Zidmann (emmanuel.zidel@gmail.com)
     Script      : GenModel.qvs
-    Version     : 0.0.0
+    Version     : 0.1.0
     Description : Script to create the main model used in the different Qlik dashboards
  */
 // ----------------------------------------------------------------------------------------------------------------
@@ -18,7 +18,7 @@ call console_info('Loading of the script $(vScriptName)');
 call console_jumpline;
 
 call console_info('Loading the data files');
-call file_table_read('$(vQvdFilePath)', 'data_tmp');
+call file_table_read(vQvdFilePath, 'data_tmp');
 call console_jumpline;
 
 call console_info('Adding new columns');
