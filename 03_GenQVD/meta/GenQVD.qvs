@@ -19,7 +19,7 @@ call console_jumpline;
 
 // Defining the loading function - necessary here because the file doesn't have a label at the first line.
 // Then we overwrite the function 'file_auxi_load' to precise the option and the columns names.
-Sub file_auxi_load(vFilePath, vTableName, vPathInclude)
+Sub _file_auxi_load(vFilePath, vTableName, vPathInclude)
     $(vTableName):
     LOAD Trim(@1) as [number],
          Trim(@2) as [upper],
