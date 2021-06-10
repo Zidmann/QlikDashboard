@@ -1,16 +1,16 @@
 // ----------------------------------------------------------------------------------------------------------------
 /*
     Author      : Zidmann (emmanuel.zidel@gmail.com)
-    Script      : GenQVD.qvs
-    Version     : 0.1.0
-    Description : Script to load file ressources and store data in QVD file
+    Script      : GenQVD_data.qvs
+    Version     : 0.2.0
+    Description : Script to load file containing the data resources and store them in a QVD file
  */
 // ----------------------------------------------------------------------------------------------------------------
 // Including the variables and the functions available in the Qlik custom library
 $(Must_Include='..\02_Ressources\params.qvs');
 $(Must_Include='$(vQliklibPath)\core.qvs');
 
-SET vScriptName='GenQVD';
+SET vScriptName='GenQVD_data';
 
 // ----------------------------------------------------------------------------------------------------------------
 //
@@ -18,7 +18,7 @@ call console_info('Loading of the script $(vScriptName)');
 call console_jumpline;
 
 // Defining the loading function - necessary here because the file doesn't have a label at the first line.
-// Then we overwrite the function 'file_auxi_load' to precise the option and the columns names.
+// Then we overwrite the function '_file_auxi_load' to precise the option and the columns names.
 Sub _file_auxi_load(vFilePath, vTableName, vPathInclude)
     $(vTableName):
     LOAD Trim(@1) as [number],
@@ -31,8 +31,8 @@ End sub;
 
 // Read the data and store them in a QVD file
 SET vTableName='data';
-call file_table_read(vInputFilePath, vTableName);
-call table_file_write(vTableName, vQvdFilePath);
+call file_table_read(vDataInputFilePath, vTableName);
+call table_file_write(vTableName, vDataQvdFilePath);
 call table_drop(vTableName);
 
 call console_info('End of the script $(vScriptName)');

@@ -2,14 +2,16 @@
 /*
     Author      : Zidmann (emmanuel.zidel@gmail.com)
     Script      : params.qvs
-    Version     : 0.0.0
+    Version     : 0.1.0
     Description : Definition of all the variables in particularly the paths
  */
 // ----------------------------------------------------------------------------------------------------------------
 
 SET vRessourcesPath='..\02_Ressources';
 LET vQliklibPath='$(vRessourcesPath)\qliklib';
-LET vInputFilePath='$(vRessourcesPath)\data\data.csv';
+LET vDataInputFilePath='$(vRessourcesPath)\data\data.csv';
+LET vYearInputFilePath='$(vRessourcesPath)\data\year.csv';
 
 SET vQvdPath='..\04_QVD';
-LET vQvdFilePath='$(vQvdPath)\data.qvd';
+LET vDataQvdFilePath='$(vQvdPath)\data.qvd';
+LET vYearQvdFilePath='$(vQvdPath)\year.qvd';
