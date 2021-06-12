@@ -1,16 +1,16 @@
 // ----------------------------------------------------------------------------------------------------------------
 /*
     Author      : Zidmann (emmanuel.zidel@gmail.com)
-    Script      : GenQVD_year.qvs
+    Script      : GenQVD_score.qvs
     Version     : 0.1.0
-    Description : Script to load file containing the year resources and store them in a QVD file
+    Description : Script to load file containing the score resources and store them in a QVD file
  */
 // ----------------------------------------------------------------------------------------------------------------
 // Including the variables and the functions available in the Qlik custom library
 $(Must_Include='..\02_Ressources\params.qvs');
 $(Must_Include='$(vQliklibPath)\core.qvs');
 
-SET vScriptName='GenQVD_year';
+SET vScriptName='GenQVD_score';
 
 // ----------------------------------------------------------------------------------------------------------------
 //
@@ -21,17 +21,18 @@ call console_jumpline;
 // Then we overwrite the function '_file_auxi_load' to precise the option and the columns names.
 Sub _file_auxi_load(vFilePath, vTableName, vPathInclude)
     $(vTableName):
-    LOAD YEAR,
-         STATUS,
-         COMMENTARY
-    FROM ['$(vFilePath)'] (txt, codepage is 1252, delimiter is ';', msq);
+    LOAD Subfield(Subfield($(file_basename('$(vFilePath)')), '.', 1), '_', -1) as [YEAR],
+         Trim(@1)                                                              as [TOPIC],
+         Trim(@2)                                                              as [MATRICULE],
+         Trim(@3)                                                              as [SCORE]
+    FROM ['$(vFilePath)'] (txt, codepage is 1252, no labels, delimiter is '\t', msq, header is 2 lines);
     ;
 End sub;
 
-// Read the years and store them in a QVD file
-SET vTableName='year';
-call file_table_read(vYearInputFilePath, vTableName);
-call table_file_write(vTableName, vYearQvdFilePath);
+// Read the scores and store them in a QVD file
+SET vTableName='score';
+call file_table_multiple_read(vScoreFilePatternPath, vTableName);
+call table_file_write(vTableName, vScoreQvdFilePath);
 call table_drop(vTableName);
 
 call console_info('End of the script $(vScriptName)');

@@ -9,9 +9,13 @@
 
 SET vRessourcesPath='..\02_Ressources';
 LET vQliklibPath='$(vRessourcesPath)\qliklib';
-LET vDataInputFilePath='$(vRessourcesPath)\data\data.csv';
-LET vYearInputFilePath='$(vRessourcesPath)\data\year.csv';
+LET vCompetitorFilePath='$(vRessourcesPath)\data\competitor.csv';
+LET vScoreFilePatternPath='$(vRessourcesPath)\data\score_????.csv';
+LET vThresholdFilePath='$(vRessourcesPath)\data\threshold.csv';
+LET vWeightFilePath='$(vRessourcesPath)\data\weight.csv';
 
 SET vQvdPath='..\04_QVD';
-LET vDataQvdFilePath='$(vQvdPath)\data.qvd';
-LET vYearQvdFilePath='$(vQvdPath)\year.qvd';
+LET vCompetitorQvdFilePath='$(vQvdPath)\competitor.qvd';
+LET vScoreQvdFilePath='$(vQvdPath)\score.qvd';
+LET vThresholdQvdFilePath='$(vQvdPath)\threshold.qvd';
+LET vWeightQvdFilePath='$(vQvdPath)\weight.qvd';

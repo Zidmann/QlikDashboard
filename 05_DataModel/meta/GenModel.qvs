@@ -17,11 +17,58 @@ SET vScriptName='GenModel';
 call console_info('Loading of the script $(vScriptName)');
 call console_jumpline;
 
-call console_info('Loading the data files');
-call file_table_read(vQvdFilePath, 'data_tmp');
+call console_info('Loading the competitors');
+call file_table_read(vCompetitorQvdFilePath, 'competitor_tmp');
 call console_jumpline;
 
-call console_info('Adding new columns');
+call console_info('Loading the scores');
+call file_table_read(vScoreQvdFilePath, 'score_tmp');
+call console_jumpline;
+
+call console_info('Loading the thresholds');
+call file_table_read(vThresholdQvdFilePath, 'threshold_tmp');
+call console_jumpline;
+
+call console_info('Loading the weights');
+call file_table_read(vWeightQvdFilePath, 'weight_tmp');
+call console_jumpline;
+
+call console_info('Calculating the score of each competitor each year');
+INNER JOIN(score_tmp)
+LOAD TOPIC,
+     COEFFICIENT
+RESIDENT weight_tmp
+;
+call table_drop('weight_tmp');
+
+score:
+LOAD YEAR,
+     MATRICULE,
+     FLOOR(SUM(SCORE*COEFFICIENT)/SUM(COEFFICIENT), 0.1) as AVG_SCORE
+RESIDENT score_tmp
+GROUP BY YEAR, MATRICULE
+;
+call table_drop('score_tmp');
+
+call console_info('Defining if the competitor pass or not the competition');
+INNER JOIN(score)
+LOAD YEAR,
+     MINAVERAGE
+RESIDENT threshold_tmp
+;
+
+result:
+LOAD YEAR,
+     MATRICULE,
+     AVG_SCORE,
+     IF(AVG_SCORE>MINAVERAGE, 'PASS', 'FAIL') as STATUS
+RESIDENT score
+ORDER BY YEAR, MATRICULE
+;
+call table_drop('score');
+
+/*
+call console_info('Adding new columns in data');
 data:
 LOAD rowno()                    as [_id],
      number,
@@ -60,6 +107,6 @@ RESIDENT data
 GROUP BY year
 ;
 call console_delimitation;
-
+*/
 call console_info('End of the script $(vScriptName)');
 call console_delimitation;
