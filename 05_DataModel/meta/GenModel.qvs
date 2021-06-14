@@ -18,7 +18,7 @@ call console_info('Loading of the script $(vScriptName)');
 call console_jumpline;
 
 call console_info('Loading the competitors');
-call file_table_read(vCompetitorQvdFilePath, 'competitor_tmp');
+call file_table_read(vCompetitorQvdFilePath, 'competitor');
 call console_jumpline;
 
 call console_info('Loading the scores');
@@ -26,7 +26,7 @@ call file_table_read(vScoreQvdFilePath, 'score_tmp');
 call console_jumpline;
 
 call console_info('Loading the thresholds');
-call file_table_read(vThresholdQvdFilePath, 'threshold_tmp');
+call file_table_read(vThresholdQvdFilePath, 'threshold');
 call console_jumpline;
 
 call console_info('Loading the weights');
@@ -54,14 +54,15 @@ call console_info('Defining if the competitor pass or not the competition');
 INNER JOIN(score)
 LOAD YEAR,
      MINAVERAGE
-RESIDENT threshold_tmp
+RESIDENT threshold
 ;
 
 result:
 LOAD YEAR,
      MATRICULE,
      AVG_SCORE,
-     IF(AVG_SCORE>MINAVERAGE, 'PASS', 'FAIL') as STATUS
+     IF(AVG_SCORE>MINAVERAGE, 'PASS', 'FAIL') as STATUS,
+     FABS(AVG_SCORE-MINAVERAGE)               as DELTA
 RESIDENT score
 ORDER BY YEAR, MATRICULE
 ;
