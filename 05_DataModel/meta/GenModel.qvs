@@ -87,5 +87,20 @@ RESIDENT performance_tmp
 ;
 call table_drop('performance_tmp');
 
+call console_info('Calculating the rank of each competitor');
+rank_tmp:
+LOAD rowno() as RANK,
+     MATRICULE
+RESIDENT competitor
+ORDER BY SUCCESS_COUNT DESC, FAIL_COUNT ASC, MATRICULE
+;
+LEFT JOIN(competitor)
+LOAD MATRICULE,
+     RANK
+RESIDENT rank_tmp
+;
+call table_drop('rank_tmp');
+
+
 call console_info('End of the script $(vScriptName)');
 call console_delimitation;
