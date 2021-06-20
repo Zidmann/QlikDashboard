@@ -49,6 +49,7 @@ RESIDENT score_tmp
 GROUP BY YEAR, MATRICULE
 ;
 call table_drop('score_tmp');
+call console_jumpline;
 
 call console_info('Defining if the competitor pass or not the competition');
 INNER JOIN(score)
@@ -68,6 +69,7 @@ RESIDENT score
 ORDER BY YEAR, MATRICULE
 ;
 call table_drop('score');
+call console_jumpline;
 
 call console_info('Counting for each competitor how many times they passed and failed');
 performance_tmp:
@@ -86,6 +88,7 @@ LOAD MATRICULE,
 RESIDENT performance_tmp
 ;
 call table_drop('performance_tmp');
+call console_jumpline;
 
 call console_info('Calculating the rank of each competitor');
 rank_tmp:
@@ -100,7 +103,14 @@ LOAD MATRICULE,
 RESIDENT rank_tmp
 ;
 call table_drop('rank_tmp');
+call console_jumpline;
 
+call console_info('Calculating the histogram for the score and the delta');
+SET vScoreFunction=FLOOR($1, 5);
+call histogram_ranges_from_function('result', 'AVG_SCORE', vScoreFunction, 'AVG_SCORE_RANGE')
+SET vDeltaFunction=FLOOR($1, 0.1);
+call histogram_ranges_from_function('result', 'DELTA',     vDeltaFunction, 'DELTA_RANGE')
+call console_jumpline;
 
 call console_info('End of the script $(vScriptName)');
 call console_delimitation;
