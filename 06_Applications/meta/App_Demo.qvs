@@ -18,31 +18,18 @@ call console_info('Loading of the script $(vScriptName)');
 call console_jumpline;
 
 // Part dedicated to limit the volume of information to manage in the dashboard
-call console_info('Filtering the lines according the labels');
-call table_rename('labels',   'labels_tmp');
-labels:
+call console_info('Filtering the results to keep only 2001, 2002 and 2003 year');
+call table_rename('result', 'result_tmp');
+result:
 NoConcatenate
 LOAD *
-RESIDENT labels_tmp
-WHERE label_old<>0 
-  AND label_season<>0
-  AND label_strange=0
+RESIDENT result_tmp
+WHERE YEAR=2001
+   OR YEAR=2002
+   OR YEAR=2003
 ;
-call table_drop('labels_tmp');
+call table_drop('result_tmp');
 
-call table_rename('data', 'data_tmp');
-data:
-NoConcatenate
-LOAD _id
-RESIDENT labels
-;
-
-data:
-LEFT JOIN
-LOAD *
-RESIDENT data_tmp
-;
-call table_drop('data_tmp');
 call console_delimitation;
 
 call console_info('End of the script $(vScriptName)');
