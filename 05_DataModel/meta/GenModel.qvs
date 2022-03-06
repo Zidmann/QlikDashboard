@@ -2,7 +2,7 @@
 /*
     Author      : Zidmann (emmanuel.zidel@gmail.com)
     Script      : GenModel.qvs
-    Version     : 0.0.0
+    Version     : 0.1.0
     Description : Script to create the main model used in the different Qlik dashboards
  */
 // ----------------------------------------------------------------------------------------------------------------
@@ -17,49 +17,100 @@ SET vScriptName='GenModel';
 call console_info('Loading of the script $(vScriptName)');
 call console_jumpline;
 
-call console_info('Loading the data files');
-call file_table_read('$(vQvdFilePath)', 'data_tmp');
+call console_info('Loading the competitors');
+call file_table_read(vCompetitorQvdFilePath, 'competitor');
 call console_jumpline;
 
-call console_info('Adding new columns');
-data:
-LOAD rowno()                    as [_id],
-     number,
-     $(number_sign(number))     as [number_sign],
-     $(number_abs(number))      as [number_abs],
-     upper,
-     lower,
-     date,
-     $(date_year(date))         as [year],
-     $(date_month(date))        as [month],
-     $(date_day(date))          as [day],
-     $(date_yearmonth(date))    as [yearmonth],
-     $(date_yearmonthday(date)) as [yearmonthday]
-RESIDENT data_tmp
-ORDER BY date DESC
+call console_info('Loading the scores');
+call file_table_read(vScoreQvdFilePath, 'score_tmp');
+call console_jumpline;
+
+call console_info('Loading the thresholds');
+call file_table_read(vThresholdQvdFilePath, 'threshold');
+call console_jumpline;
+
+call console_info('Loading the weights');
+call file_table_read(vWeightQvdFilePath, 'weight_tmp');
+call console_jumpline;
+
+call console_info('Calculating the score of each competitor each year');
+INNER JOIN(score_tmp)
+LOAD TOPIC,
+     COEFFICIENT
+RESIDENT weight_tmp
+;
+call table_drop('weight_tmp');
+
+score:
+LOAD YEAR,
+     MATRICULE,
+     FLOOR(SUM(SCORE*COEFFICIENT)/SUM(COEFFICIENT), 0.1) as AVG_SCORE
+RESIDENT score_tmp
+GROUP BY YEAR, MATRICULE
+;
+call table_drop('score_tmp');
+call console_jumpline;
+
+call console_info('Defining if the competitor pass or not the competition');
+INNER JOIN(score)
+LOAD YEAR,
+     MINAVERAGE
+RESIDENT threshold
 ;
 
-call table_drop('data_tmp');
-call console_delimitation;
-
-call console_info('Defining labels');
-labels:
-LOAD _id,
-     IF(year<2021,        0, 1) as [label_old],
-     IF(month<4,          0, 1) as [label_season],
-     IF(number_sign<>'-', 0, 1) as [label_strange]
-RESIDENT data
+result:
+LOAD rowno()                                  as ID_RESULT,
+     YEAR,
+     MATRICULE,
+     AVG_SCORE,
+     IF(AVG_SCORE>MINAVERAGE, 'PASS', 'FAIL') as STATUS,
+     $(number_abs(AVG_SCORE-MINAVERAGE))      as DELTA
+RESIDENT score
+ORDER BY YEAR, MATRICULE
 ;
-call console_delimitation;
+call table_drop('score');
+call console_jumpline;
 
-call console_info('Aggregating information about the dates');
-dataDate:
-NoConcatenate
-LOAD year, MAX(Date(date, 'DD/MM/YYYY')) as [lastDate]
-RESIDENT data
-GROUP BY year
+call console_info('Counting for each competitor how many times they passed and failed');
+performance_tmp:
+LOAD MATRICULE,
+     COUNT(IF(STATUS='PASS', 1)) as SUCCESS_COUNT,
+     COUNT(IF(STATUS='FAIL', 1)) as FAIL_COUNT
+RESIDENT result
+GROUP BY MATRICULE
+ORDER BY MATRICULE
 ;
-call console_delimitation;
+
+LEFT JOIN(competitor)
+LOAD MATRICULE,
+     SUCCESS_COUNT,
+     FAIL_COUNT
+RESIDENT performance_tmp
+;
+call table_drop('performance_tmp');
+call console_jumpline;
+
+call console_info('Calculating the rank of each competitor');
+rank_tmp:
+LOAD rowno() as RANK,
+     MATRICULE
+RESIDENT competitor
+ORDER BY SUCCESS_COUNT DESC, FAIL_COUNT ASC, MATRICULE
+;
+LEFT JOIN(competitor)
+LOAD MATRICULE,
+     RANK
+RESIDENT rank_tmp
+;
+call table_drop('rank_tmp');
+call console_jumpline;
+
+call console_info('Calculating the histogram for the score and the delta');
+SET vScoreFunction=FLOOR($1, 5);
+call histogram_ranges_from_function('result', 'AVG_SCORE', vScoreFunction, 'AVG_SCORE_RANGE')
+SET vDeltaFunction=FLOOR($1, 0.1);
+call histogram_ranges_from_function('result', 'DELTA',     vDeltaFunction, 'DELTA_RANGE')
+call console_jumpline;
 
 call console_info('End of the script $(vScriptName)');
 call console_delimitation;

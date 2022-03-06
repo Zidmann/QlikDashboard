@@ -1,0 +1,37 @@
+// ----------------------------------------------------------------------------------------------------------------
+/*
+    Author      : Zidmann (emmanuel.zidel@gmail.com)
+    Script      : GenQVD_weight.qvs
+    Version     : 0.1.0
+    Description : Script to load file containing the weight resources and store them in a QVD file
+ */
+// ----------------------------------------------------------------------------------------------------------------
+// Including the variables and the functions available in the Qlik custom library
+$(Must_Include='..\02_Ressources\params.qvs');
+$(Must_Include='$(vQliklibPath)\core.qvs');
+
+SET vScriptName='GenQVD_weight';
+
+// ----------------------------------------------------------------------------------------------------------------
+//
+call console_info('Loading of the script $(vScriptName)');
+call console_jumpline;
+
+// Defining the loading function - necessary here because the file doesn't have a label at the first line.
+// Then we overwrite the function '_file_auxi_load' to precise the option and the columns names.
+Sub _file_auxi_load(vFilePath, vTableName, vPathInclude)
+    $(vTableName):
+    LOAD Trim(@1) as [TOPIC],
+         Trim(@2) as [COEFFICIENT]
+    FROM ['$(vFilePath)'] (txt, codepage is 1252, no labels, delimiter is ';', msq);
+    ;
+End sub;
+
+// Read the weights and store them in a QVD file
+SET vTableName='weight';
+call file_table_read(vWeightFilePath, vTableName);
+call table_file_write(vTableName, vWeightQvdFilePath);
+call table_drop(vTableName);
+
+call console_info('End of the script $(vScriptName)');
+call console_delimitation;
